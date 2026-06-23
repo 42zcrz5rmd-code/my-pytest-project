@@ -1,0 +1,33 @@
+name: Python Tests                          # 工作流名称，会在 GitHub Actions 页面显示
+
+on: push                                    # 触发条件：推送代码时自动运行
+
+env:                                        # 环境变量（所有步骤都能用）
+  PYTHON_VERSION: "3.10"                    # 指定 Python 版本
+  API_BASE_URL: "https://api.example.com"   # 你的测试用到的变量
+
+jobs:                                       # 工作流由多个 job 组成
+  test:                                     # job 名称
+    runs-on: ubuntu-latest                  # 运行环境：Ubuntu 最新版（免费）
+
+    steps:                                  # 步骤列表，按顺序执行
+      - name: Checkout code                 # 步骤1：拉取代码
+        uses: actions/checkout@v4           # 使用官方 action
+
+      - name: Setup Python                  # 步骤2：安装 Python
+        uses: actions/setup-python@v5       # 使用官方 action
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}  # 引用上面定义的环境变量
+
+      - name: Install dependencies          # 步骤3：安装依赖
+        run: pip install -r requirements.txt  # 如果还没有 requirements.txt，先用 pip install pytest requests
+
+      - name: Run tests                     # 步骤4：运行测试
+        run: pytest --html=report.html --self-contained-html
+
+      - name: Upload test report            # 步骤5（可选）：上传测试报告
+        if: always()                        # 无论测试通过还是失败都执行
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: report.html
